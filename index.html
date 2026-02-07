@@ -16,6 +16,8 @@
   </head>
 
   <body>
+    <a class="skip-link" href="#mainScroll">Skip to content</a>
+
     <div class="app-shell">
       <!-- SIDEBAR -->
       <aside class="sidebar" id="sidebar" aria-label="Sidebar">
@@ -25,6 +27,7 @@
             <div class="brand-text">
               <div class="brand-title" id="brandTitle">CyberShield</div>
               <div class="brand-sub" id="brandSub">SOC v2.4.1</div>
+              <div class="brand-badge">Portfolio Demo</div>
             </div>
           </div>
 
@@ -85,7 +88,7 @@
       </aside>
 
       <!-- MAIN -->
-      <main class="main" aria-label="Main content">
+      <main class="main" id="main" aria-label="Main content">
         <!-- TOPBAR -->
         <header class="topbar" role="banner">
           <div class="top-left">
@@ -115,7 +118,7 @@
           </div>
         </header>
 
-        <!-- CONTENT WRAP (centers layout and prevents giant empty space feeling) -->
+        <!-- CONTENT WRAP -->
         <div class="content">
           <div class="main-scroll" id="mainScroll">
             <!-- DASHBOARD -->
@@ -437,7 +440,6 @@
                   <button class="btn" id="btnSimIncident" type="button">Simulate incident</button>
                 </div>
 
-                <!-- Split layout hook: list + (optional) details panel -->
                 <div class="threat-split">
                   <div class="threat-pane">
                     <div class="threat-list" id="threatList"></div>
@@ -445,8 +447,26 @@
                   </div>
 
                   <aside class="threat-detail" aria-label="Selected alert details">
-                    <div class="muted small">Select an alert to view details.</div>
-                    <div class="empty muted">Details panel (optional enhancement)</div>
+                    <div class="detail-head">
+                      <div>
+                        <div class="detail-title">Alert details</div>
+                        <div class="detail-sub muted">Select an item to inspect</div>
+                      </div>
+                      <span class="pill muted" id="detailSev">None</span>
+                    </div>
+
+                    <div class="detail-body">
+                      <div class="empty muted" id="detailEmpty">No alert selected.</div>
+
+                      <div class="detail-grid" id="detailGrid" hidden>
+                        <div class="detail-row"><span class="muted">Type</span><span class="mono" id="detailType">N/A</span></div>
+                        <div class="detail-row"><span class="muted">Source</span><span class="mono" id="detailSource">N/A</span></div>
+                        <div class="detail-row"><span class="muted">User</span><span class="mono" id="detailUser">N/A</span></div>
+                        <div class="detail-row"><span class="muted">Time</span><span class="mono" id="detailTime">N/A</span></div>
+                      </div>
+
+                      <div class="detail-notes" id="detailNotes" hidden></div>
+                    </div>
                   </aside>
                 </div>
               </article>
