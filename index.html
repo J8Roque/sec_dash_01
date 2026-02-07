@@ -3,316 +3,403 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Cybersecurity Dashboard</title>
+    <meta name="color-scheme" content="dark light" />
+    <meta name="theme-color" content="#0b1020" />
+    <title>CyberShield SOC</title>
+
     <link rel="stylesheet" href="./styles.css" />
 
-    <!-- Charts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-
-    <!-- Password strength library (optional but improves accuracy). App has fallback if it fails. -->
     <script defer src="https://cdn.jsdelivr.net/npm/zxcvbn@4.4.2/dist/zxcvbn.js"></script>
-
-    <meta name="description" content="Interactive cybersecurity dashboard demo with simulated tools." />
   </head>
 
   <body>
-    <header class="topbar">
-      <div class="brand">
-        <div class="logo" aria-hidden="true">🛡️</div>
-        <div>
-          <div class="brand-title">Cybersecurity Dashboard</div>
-          <div class="brand-subtitle">Interactive demo app (safe, simulated tools)</div>
-        </div>
-      </div>
-
-      <div class="topbar-actions">
-        <button id="btnExport" class="btn btn-ghost" title="Export report as JSON">
-          Export Report
-        </button>
-        <button id="btnTheme" class="btn" title="Toggle theme">
-          Toggle Theme
-        </button>
-      </div>
-    </header>
-
-    <nav class="tabs" aria-label="Primary">
-      <button class="tab active" data-view="dashboard">Dashboard</button>
-      <button class="tab" data-view="scanner">Vuln Scanner</button>
-      <button class="tab" data-view="password">Password Analyzer</button>
-      <button class="tab" data-view="threats">Threat Feed</button>
-      <button class="tab" data-view="network">Network Visualizer</button>
-      <button class="tab" data-view="about">About</button>
-    </nav>
-
-    <main class="container">
-      <!-- DASHBOARD -->
-      <section id="view-dashboard" class="view active" aria-labelledby="Dashboard">
-        <div class="grid cards">
-          <article class="card">
-            <div class="card-label">Blocked Attempts (last hour)</div>
-            <div class="card-value" id="mBlocked">0</div>
-            <div class="card-meta">
-              <span class="pill" id="mBlockedTrend">Stable</span>
-              <span class="muted" id="mBlockedNote">Updating live</span>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Open Alerts</div>
-            <div class="card-value" id="mAlerts">0</div>
-            <div class="card-meta">
-              <span class="pill warn" id="mAlertsSev">Medium</span>
-              <span class="muted">Based on simulated feed</span>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Patch Compliance</div>
-            <div class="card-value" id="mPatch">0%</div>
-            <div class="card-meta">
-              <span class="pill ok" id="mPatchStatus">OK</span>
-              <span class="muted">Target 95%+</span>
-            </div>
-          </article>
-
-          <article class="card">
-            <div class="card-label">Auth Health</div>
-            <div class="card-value" id="mAuth">0%</div>
-            <div class="card-meta">
-              <span class="pill" id="mAuthStatus">Stable</span>
-              <span class="muted">MFA and login signals</span>
-            </div>
-          </article>
+    <div class="app">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sb-brand">
+          <div class="sb-logo" aria-hidden="true">🛡️</div>
+          <div class="sb-brand-text">
+            <div class="sb-title">CyberShield</div>
+            <div class="sb-sub">SOC v2.4.1</div>
+          </div>
         </div>
 
-        <div class="grid charts">
-          <article class="card">
-            <div class="card-head">
-              <h2>Alert Severity Distribution</h2>
-              <div class="muted">Live simulated alerts</div>
-            </div>
-            <canvas id="chartSeverity" height="120"></canvas>
-          </article>
+        <nav class="sb-nav" aria-label="Primary">
+          <button class="nav-item active" data-view="dashboard">
+            <span class="ico">📊</span><span>Dashboard</span>
+          </button>
+          <button class="nav-item" data-view="scanner">
+            <span class="ico">🧪</span><span>Vuln Scanner</span>
+          </button>
+          <button class="nav-item" data-view="password">
+            <span class="ico">🔑</span><span>Password Analyzer</span>
+          </button>
+          <button class="nav-item" data-view="network">
+            <span class="ico">📡</span><span>Network Monitor</span>
+          </button>
+          <button class="nav-item" data-view="threats">
+            <span class="ico">🚨</span><span>Threat Intel</span>
+          </button>
+          <button class="nav-item" data-view="about">
+            <span class="ico">🛠️</span><span>Security Tools</span>
+          </button>
+        </nav>
 
-          <article class="card">
-            <div class="card-head">
-              <h2>Security Events Over Time</h2>
-              <div class="muted">Last 60 seconds</div>
-            </div>
-            <canvas id="chartEvents" height="120"></canvas>
-          </article>
-        </div>
-
-        <article class="card">
-          <div class="card-head">
-            <h2>Quick Actions</h2>
-            <div class="muted">Portfolio friendly demo actions</div>
-          </div>
-          <div class="actions">
-            <button id="btnSimIncident" class="btn">Simulate Incident</button>
-            <button id="btnClearAlerts" class="btn btn-ghost">Clear Alerts</button>
-            <button id="btnPause" class="btn btn-ghost">Pause Live Updates</button>
-          </div>
-          <p class="hint">
-            Note: Everything is simulated for safety. No real scanning, intrusion, or data collection happens.
-          </p>
-        </article>
-      </section>
-
-      <!-- SCANNER -->
-      <section id="view-scanner" class="view">
-        <article class="card">
-          <div class="card-head">
-            <h2>Vulnerability Scanner (Simulated)</h2>
-            <div class="muted">Safe demo. Does not scan real targets.</div>
-          </div>
-
-          <div class="form-grid">
-            <div class="field">
-              <label for="scanTarget">Asset label</label>
-              <input id="scanTarget" type="text" placeholder="Example: Web App Prod (demo)" />
-              <div class="field-help">Use a label, not a real domain. This tool is simulated.</div>
-            </div>
-
-            <div class="field">
-              <label for="scanProfile">Scan profile</label>
-              <select id="scanProfile">
-                <option value="quick">Quick (headers, TLS, basics)</option>
-                <option value="standard" selected>Standard (common misconfigs)</option>
-                <option value="deep">Deep (simulated extended checks)</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="scanScope">Scope</label>
-              <select id="scanScope">
-                <option value="external" selected>External surface</option>
-                <option value="internal">Internal surface</option>
-                <option value="cloud">Cloud posture</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="btnStartScan" class="btn">Start Scan</button>
-            </div>
-          </div>
-
-          <div class="progress-wrap" aria-live="polite">
-            <div class="progress">
-              <div id="scanBar" class="progress-bar" style="width: 0%"></div>
-            </div>
-            <div class="muted" id="scanStatus">Idle</div>
-          </div>
-
-          <div class="results">
-            <h3>Findings</h3>
-            <div id="scanResults" class="empty">No results yet. Start a scan.</div>
-          </div>
-        </article>
-      </section>
-
-      <!-- PASSWORD -->
-      <section id="view-password" class="view">
-        <article class="card">
-          <div class="card-head">
-            <h2>Password Strength Analyzer</h2>
-            <div class="muted">Runs locally in your browser</div>
-          </div>
-
-          <div class="form-grid">
-            <div class="field span-2">
-              <label for="pwInput">Enter a password</label>
-              <input id="pwInput" type="password" placeholder="Type here to analyze" autocomplete="new-password" />
-              <div class="field-help">Tip: Use a passphrase with 4+ words, symbols optional.</div>
-            </div>
-
-            <div class="field">
-              <label>&nbsp;</label>
-              <button id="btnTogglePw" class="btn btn-ghost">Show</button>
-            </div>
-          </div>
-
-          <div class="pw-grid">
+        <div class="sb-live">
+          <div class="sb-live-head">
+            <div class="dot" aria-hidden="true"></div>
             <div>
-              <div class="meter">
-                <div id="pwMeter" class="meter-bar" style="width: 0%"></div>
+              <div class="sb-live-title">Live Threats</div>
+              <div class="sb-live-sub">Active incidents detected</div>
+            </div>
+          </div>
+
+          <div class="sb-live-value" id="sbLiveCount">0</div>
+          <div class="sb-live-foot">
+            <span class="mini-pill" id="mAlertsSev">Medium</span>
+            <span class="sb-live-muted">Simulated feed</span>
+          </div>
+        </div>
+
+        <div class="sb-footer">
+          <div class="sb-footer-row">
+            <span class="muted">Mode</span>
+            <span class="mono" id="sbMode">Live</span>
+          </div>
+          <div class="sb-footer-row">
+            <span class="muted">Status</span>
+            <span class="mono ok">Operational</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <main class="main">
+        <header class="main-header">
+          <div class="mh-left">
+            <h1 class="mh-title">
+              <span class="accent">Security Operations</span><br />
+              Center
+            </h1>
+            <p class="mh-sub">Real time threat monitoring and analysis</p>
+          </div>
+
+          <div class="mh-right">
+            <div class="clock chip">
+              <div class="clock-dot" aria-hidden="true"></div>
+              <div class="mono" id="clock">0000-00-00 00:00:00</div>
+              <div class="muted">UTC</div>
+            </div>
+
+            <button id="btnTheme" class="icon-btn" title="Toggle theme" aria-label="Toggle theme">
+              🌙
+            </button>
+            <button id="btnExport" class="icon-btn" title="Export report" aria-label="Export report">
+              ⬇️
+            </button>
+          </div>
+        </header>
+
+        <!-- DASHBOARD -->
+        <section id="view-dashboard" class="view active">
+          <div class="kpi-grid">
+            <article class="kpi card">
+              <div class="kpi-top">
+                <div class="kpi-label">Security Score</div>
+                <div class="kpi-ghost" aria-hidden="true">🛡️</div>
               </div>
-              <div class="pw-meta">
-                <span class="pill" id="pwVerdict">No input</span>
-                <span class="muted" id="pwScore">Score: 0/4</span>
+              <div class="kpi-main">
+                <div class="kpi-value">
+                  <span id="kSecurityScore">94</span><span class="kpi-unit">/100</span>
+                </div>
+                <div class="kpi-meta muted" id="kScoreDelta">+2.4% from last week</div>
+              </div>
+              <div class="mini-bar">
+                <div class="mini-fill good" id="kSecurityBar" style="width: 0%"></div>
+              </div>
+            </article>
+
+            <article class="kpi card">
+              <div class="kpi-top">
+                <div class="kpi-label">Active Threats</div>
+                <div class="kpi-ghost" aria-hidden="true">🦠</div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value">
+                  <span id="mAlerts">0</span><span class="kpi-unit"> live</span>
+                </div>
+                <div class="kpi-meta muted" id="kThreatSummary">0 critical, 0 medium</div>
+              </div>
+              <div class="mini-bar">
+                <div class="mini-fill bad" id="kThreatBar" style="width: 0%"></div>
+              </div>
+            </article>
+
+            <article class="kpi card">
+              <div class="kpi-top">
+                <div class="kpi-label">Systems Monitored</div>
+                <div class="kpi-ghost" aria-hidden="true">🗄️</div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value">
+                  <span id="kSystems">847</span><span class="kpi-unit"> nodes</span>
+                </div>
+                <div class="kpi-meta muted" id="kUptime">99.9% uptime</div>
+              </div>
+              <div class="mini-bar">
+                <div class="mini-fill info" id="kSystemsBar" style="width: 92%"></div>
+              </div>
+            </article>
+
+            <article class="kpi card">
+              <div class="kpi-top">
+                <div class="kpi-label">Blocked Attacks</div>
+                <div class="kpi-ghost" aria-hidden="true">⛔</div>
+              </div>
+              <div class="kpi-main">
+                <div class="kpi-value">
+                  <span id="mBlocked">0</span><span class="kpi-unit"> today</span>
+                </div>
+                <div class="kpi-meta muted" id="mBlockedNote">Updating live</div>
+              </div>
+              <div class="mini-bar">
+                <div class="mini-fill warn" id="kBlockedBar" style="width: 0%"></div>
+              </div>
+            </article>
+          </div>
+
+          <div class="panel-grid">
+            <article class="card panel">
+              <div class="panel-head">
+                <div class="panel-title">Threat Activity (24h)</div>
+                <div class="panel-chips">
+                  <span class="chip chip-bad">Critical</span>
+                  <span class="chip chip-warn">Warning</span>
+                </div>
+              </div>
+              <div class="panel-body">
+                <canvas id="chartEvents" height="120"></canvas>
+              </div>
+            </article>
+
+            <article class="card panel">
+              <div class="panel-head">
+                <div class="panel-title">Alert Severity Distribution</div>
+                <div class="panel-chips">
+                  <span class="chip">Live</span>
+                </div>
+              </div>
+              <div class="panel-body">
+                <canvas id="chartSeverity" height="120"></canvas>
+              </div>
+            </article>
+          </div>
+
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Quick Actions</div>
+              <div class="panel-chips">
+                <span class="chip">Demo Safe</span>
+              </div>
+            </div>
+            <div class="panel-actions">
+              <button id="btnSimIncident" class="btn">Simulate Incident</button>
+              <button id="btnClearAlerts" class="btn btn-ghost">Clear Alerts</button>
+              <button id="btnPause" class="btn btn-ghost">Pause Live</button>
+            </div>
+            <div class="muted small">
+              Everything is simulated and safe for public GitHub Pages.
+            </div>
+          </article>
+        </section>
+
+        <!-- SCANNER -->
+        <section id="view-scanner" class="view">
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Vulnerability Scanner (Simulated)</div>
+              <span class="chip">No real scanning</span>
+            </div>
+
+            <div class="form-grid">
+              <div class="field">
+                <label for="scanTarget">Asset label</label>
+                <input id="scanTarget" type="text" placeholder="Example: Web App Prod (demo)" />
+                <div class="field-help">Use a label, not a real domain.</div>
+              </div>
+
+              <div class="field">
+                <label for="scanProfile">Scan profile</label>
+                <select id="scanProfile">
+                  <option value="quick">Quick</option>
+                  <option value="standard" selected>Standard</option>
+                  <option value="deep">Deep</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label for="scanScope">Scope</label>
+                <select id="scanScope">
+                  <option value="external" selected>External</option>
+                  <option value="internal">Internal</option>
+                  <option value="cloud">Cloud</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>&nbsp;</label>
+                <button id="btnStartScan" class="btn">Start Scan</button>
               </div>
             </div>
 
-            <div class="card inner">
-              <h3>Feedback</h3>
-              <ul id="pwFeedback" class="list">
-                <li class="muted">Type a password to see suggestions.</li>
+            <div class="progress-wrap" aria-live="polite">
+              <div class="progress">
+                <div id="scanBar" class="progress-bar" style="width: 0%"></div>
+              </div>
+              <div class="muted" id="scanStatus">Idle</div>
+            </div>
+
+            <div class="results">
+              <h3>Findings</h3>
+              <div id="scanResults" class="empty">No results yet. Start a scan.</div>
+            </div>
+          </article>
+        </section>
+
+        <!-- PASSWORD -->
+        <section id="view-password" class="view">
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Password Strength Analyzer</div>
+              <span class="chip">Runs locally</span>
+            </div>
+
+            <div class="form-grid pw-form">
+              <div class="field">
+                <label for="pwInput">Enter a password</label>
+                <input id="pwInput" type="password" placeholder="Type here to analyze" autocomplete="new-password" />
+                <div class="field-help">Passphrases usually win.</div>
+              </div>
+
+              <div class="field">
+                <label>&nbsp;</label>
+                <button id="btnTogglePw" class="btn btn-ghost">Show</button>
+              </div>
+            </div>
+
+            <div class="pw-grid">
+              <div>
+                <div class="meter">
+                  <div id="pwMeter" class="meter-bar" style="width: 0%"></div>
+                </div>
+                <div class="pw-meta">
+                  <span class="chip" id="pwVerdict">No input</span>
+                  <span class="muted" id="pwScore">Score: 0/4</span>
+                </div>
+              </div>
+
+              <div class="card inner">
+                <h3>Feedback</h3>
+                <ul id="pwFeedback" class="list">
+                  <li class="muted">Type a password to see suggestions.</li>
+                </ul>
+                <div class="muted small" id="pwCrack">Estimated crack time: N/A</div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- THREATS -->
+        <section id="view-threats" class="view">
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Threat Detection Feed</div>
+              <span class="chip">Simulated alerts</span>
+            </div>
+
+            <div class="toolbar">
+              <div class="field inline">
+                <label for="threatFilter">Severity</label>
+                <select id="threatFilter">
+                  <option value="all" selected>All</option>
+                  <option value="critical">Critical</option>
+                  <option value="high">High</option>
+                  <option value="medium">Medium</option>
+                  <option value="low">Low</option>
+                </select>
+              </div>
+
+              <div class="field inline">
+                <label for="threatSearch">Search</label>
+                <input id="threatSearch" type="text" placeholder="phishing, MFA, ransomware" />
+              </div>
+
+              <button id="btnThreatPause" class="btn btn-ghost">Pause</button>
+              <button id="btnThreatClear" class="btn btn-ghost">Clear</button>
+            </div>
+
+            <div id="threatList" class="threat-list"></div>
+            <div id="threatEmpty" class="empty">No alerts yet. Live feed will populate.</div>
+          </article>
+        </section>
+
+        <!-- NETWORK -->
+        <section id="view-network" class="view">
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">Network Traffic Visualizer</div>
+              <span class="chip">Simulated traffic</span>
+            </div>
+
+            <div class="panel-grid">
+              <article class="card inner">
+                <h3>Packets per Second</h3>
+                <canvas id="chartPps" height="120"></canvas>
+              </article>
+
+              <article class="card inner">
+                <h3>Bandwidth (Mbps)</h3>
+                <canvas id="chartMbps" height="120"></canvas>
+              </article>
+            </div>
+
+            <div class="panel-actions">
+              <button id="btnNetSpike" class="btn">Simulate Traffic Spike</button>
+              <button id="btnNetReset" class="btn btn-ghost">Reset</button>
+            </div>
+          </article>
+        </section>
+
+        <!-- ABOUT -->
+        <section id="view-about" class="view">
+          <article class="card panel">
+            <div class="panel-head">
+              <div class="panel-title">About</div>
+              <span class="chip">Portfolio ready</span>
+            </div>
+
+            <div class="prose">
+              <p>
+                This is a static, browser based SOC dashboard built for demos and GitHub Pages.
+                It uses simulated data for safety.
+              </p>
+              <ul class="list">
+                <li>Real time KPIs and charts</li>
+                <li>Simulated vulnerability scanning workflow</li>
+                <li>Password strength scoring with feedback</li>
+                <li>Threat feed filtering and triage UI</li>
+                <li>Network visualization charts</li>
               </ul>
-              <div class="muted" id="pwCrack">Estimated crack time: N/A</div>
             </div>
-          </div>
-        </article>
-      </section>
+          </article>
+        </section>
 
-      <!-- THREATS -->
-      <section id="view-threats" class="view">
-        <article class="card">
-          <div class="card-head">
-            <h2>Threat Detection Feed</h2>
-            <div class="muted">Simulated live alerts, filterable</div>
-          </div>
-
-          <div class="toolbar">
-            <div class="field inline">
-              <label for="threatFilter">Severity</label>
-              <select id="threatFilter">
-                <option value="all" selected>All</option>
-                <option value="critical">Critical</option>
-                <option value="high">High</option>
-                <option value="medium">Medium</option>
-                <option value="low">Low</option>
-              </select>
-            </div>
-
-            <div class="field inline">
-              <label for="threatSearch">Search</label>
-              <input id="threatSearch" type="text" placeholder="Example: phishing, MFA, ransomware" />
-            </div>
-
-            <button id="btnThreatPause" class="btn btn-ghost">Pause</button>
-            <button id="btnThreatClear" class="btn btn-ghost">Clear</button>
-          </div>
-
-          <div id="threatList" class="threat-list"></div>
-          <div id="threatEmpty" class="empty">No alerts yet. Live feed will populate.</div>
-        </article>
-      </section>
-
-      <!-- NETWORK -->
-      <section id="view-network" class="view">
-        <article class="card">
-          <div class="card-head">
-            <h2>Network Traffic Visualizer</h2>
-            <div class="muted">Simulated packets and bandwidth (last 60 seconds)</div>
-          </div>
-
-          <div class="grid charts">
-            <article class="card inner">
-              <h3>Packets per Second</h3>
-              <canvas id="chartPps" height="120"></canvas>
-            </article>
-            <article class="card inner">
-              <h3>Bandwidth (Mbps)</h3>
-              <canvas id="chartMbps" height="120"></canvas>
-            </article>
-          </div>
-
-          <div class="actions">
-            <button id="btnNetSpike" class="btn">Simulate Traffic Spike</button>
-            <button id="btnNetReset" class="btn btn-ghost">Reset</button>
-          </div>
-        </article>
-      </section>
-
-      <!-- ABOUT -->
-      <section id="view-about" class="view">
-        <article class="card">
-          <div class="card-head">
-            <h2>About this App</h2>
-            <div class="muted">Portfolio ready cybersecurity demo</div>
-          </div>
-
-          <div class="prose">
-            <p>
-              This is a static, browser based single page application designed for demos and portfolios.
-              It intentionally uses simulated data so it is safe to publish publicly on GitHub Pages.
-            </p>
-            <h3>What it demonstrates</h3>
-            <ul class="list">
-              <li>Dashboard KPIs and real time charts</li>
-              <li>Simulated vulnerability assessment workflow with findings and remediation tips</li>
-              <li>Password strength scoring with clear user feedback</li>
-              <li>Threat feed filtering, searching, and alert triage style UI</li>
-              <li>Streaming network visualization charts</li>
-              <li>Exportable report for screenshots and documentation</li>
-            </ul>
-
-            <h3>Safe use note</h3>
-            <p>
-              This app does not scan networks, ports, websites, or hosts. It does not collect data.
-              It is a UI and analytics demo only.
-            </p>
-          </div>
-        </article>
-      </section>
-    </main>
-
-    <footer class="footer">
-      <div class="muted">
-        Built as a static SPA for GitHub Pages • No server needed
-      </div>
-    </footer>
+        <footer class="footer">
+          <div class="muted small">CyberShield SOC demo • Static SPA • GitHub Pages friendly</div>
+        </footer>
+      </main>
+    </div>
 
     <script defer src="./app.js"></script>
   </body>
